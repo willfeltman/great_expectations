@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List, Mapping, Optional, Union, cast
 
 import great_expectations.exceptions as ge_exceptions
 from great_expectations.core import ExpectationSuite
+from great_expectations.core.serializer import JsonConfigSerializer
 from great_expectations.data_context.data_context.abstract_data_context import (
     AbstractDataContext,
 )
@@ -24,9 +25,6 @@ from great_expectations.data_context.types.refs import GeCloudResourceRef
 from great_expectations.data_context.types.resource_identifiers import GeCloudIdentifier
 from great_expectations.data_context.util import substitute_all_config_variables
 from great_expectations.datasource import Datasource
-from great_expectations.datasource.datasource_serializer import (
-    JsonDatasourceConfigSerializer,
-)
 
 if TYPE_CHECKING:
     from great_expectations.checkpoint.checkpoint import Checkpoint
@@ -85,7 +83,7 @@ class CloudDataContext(AbstractDataContext):
             store_name=store_name,
             store_backend=store_backend,
             runtime_environment=runtime_environment,
-            serializer=JsonDatasourceConfigSerializer(schema=datasourceConfigSchema),
+            serializer=JsonConfigSerializer(schema=datasourceConfigSchema),
         )
         self._datasource_store = datasource_store
 
@@ -185,23 +183,24 @@ class CloudDataContext(AbstractDataContext):
         if not isinstance(overwrite_existing, bool):
             raise ValueError("Parameter overwrite_existing must be of type BOOL")
 
+        existing_suite_names = self.list_expectation_suite_names()
+        if expectation_suite_name in existing_suite_names and not overwrite_existing:
+            raise ge_exceptions.DataContextError(
+                f"expectation_suite '{expectation_suite_name}' already exists. If you would like to overwrite this "
+                "expectation_suite, set overwrite_existing=True."
+            )
+
         expectation_suite = ExpectationSuite(
             expectation_suite_name=expectation_suite_name, data_context=self
         )
-        ge_cloud_id = expectation_suite.ge_cloud_id
         key = GeCloudIdentifier(
             resource_type=GeCloudRESTResource.EXPECTATION_SUITE,
-            ge_cloud_id=ge_cloud_id,
         )
-        if (
-            self.expectations_store.has_key(key)  # noqa: W601
-            and not overwrite_existing
-        ):
-            raise ge_exceptions.DataContextError(
-                f"expectation_suite with GE Cloud ID {ge_cloud_id} already exists. If you would like to overwrite this "
-                "expectation_suite, set overwrite_existing=True."
-            )
-        self.expectations_store.set(key, expectation_suite, **kwargs)
+
+        response: Union[bool, GeCloudResourceRef] = self.expectations_store.set(key, expectation_suite, **kwargs)  # type: ignore[func-returns-value]
+        if isinstance(response, GeCloudResourceRef):
+            expectation_suite.ge_cloud_id = response.ge_cloud_id
+
         return expectation_suite
 
     def delete_expectation_suite(
@@ -225,9 +224,9 @@ class CloudDataContext(AbstractDataContext):
             raise ge_exceptions.DataContextError(
                 f"expectation_suite with id {ge_cloud_id} does not exist."
             )
-        else:
-            self.expectations_store.remove_key(key)
-            return True
+
+        self.expectations_store.remove_key(key)
+        return True
 
     def get_expectation_suite(
         self,
@@ -248,7 +247,7 @@ class CloudDataContext(AbstractDataContext):
         )
         if not self.expectations_store.has_key(key):  # noqa: W601
             raise ge_exceptions.DataContextError(
-                f"expectation_suite {expectation_suite_name} not found"
+                f"expectation_suite with id {ge_cloud_id} not found"
             )
 
         expectations_schema_dict: dict = cast(dict, self.expectations_store.get(key))
@@ -275,21 +274,15 @@ class CloudDataContext(AbstractDataContext):
         Returns:
             None
         """
-        ge_cloud_id = expectation_suite.ge_cloud_id
         key = GeCloudIdentifier(
             resource_type=GeCloudRESTResource.EXPECTATION_SUITE,
-            ge_cloud_id=ge_cloud_id
-            if ge_cloud_id is not None
-            else str(expectation_suite.ge_cloud_id),
+            ge_cloud_id=expectation_suite.ge_cloud_id,
+            resource_name=expectation_suite.expectation_suite_name,
         )
-        if (
-            self.expectations_store.has_key(key)  # noqa: W601
-            and not overwrite_existing
-        ):
-            raise ge_exceptions.DataContextError(
-                f"expectation_suite with GE Cloud ID {ge_cloud_id} already exists. "
-                f"If you would like to overwrite this expectation_suite, set overwrite_existing=True."
-            )
+
+        if not overwrite_existing:
+            self._validate_suite_unique_constaints_before_save(key)
+
         self._evaluation_parameter_dependencies_compiled = False
         include_rendered_content = (
             self._determine_if_expectation_suite_include_rendered_content(
@@ -298,7 +291,29 @@ class CloudDataContext(AbstractDataContext):
         )
         if include_rendered_content:
             expectation_suite.render()
-        self.expectations_store.set(key, expectation_suite, **kwargs)
+
+        response = self.expectations_store.set(key, expectation_suite, **kwargs)  # type: ignore[func-returns-value]
+        if isinstance(response, GeCloudResourceRef):
+            expectation_suite.ge_cloud_id = response.ge_cloud_id
+
+    def _validate_suite_unique_constaints_before_save(
+        self, key: GeCloudIdentifier
+    ) -> None:
+        ge_cloud_id = key.ge_cloud_id
+        if ge_cloud_id:
+            if self.expectations_store.has_key(key):  # noqa: W601
+                raise ge_exceptions.DataContextError(
+                    f"expectation_suite with GE Cloud ID {ge_cloud_id} already exists. "
+                    f"If you would like to overwrite this expectation_suite, set overwrite_existing=True."
+                )
+
+        suite_name = key.resource_name
+        existing_suite_names = self.list_expectation_suite_names()
+        if suite_name in existing_suite_names:
+            raise ge_exceptions.DataContextError(
+                f"expectation_suite '{suite_name}' already exists. If you would like to overwrite this "
+                "expectation_suite, set overwrite_existing=True."
+            )
 
     @property
     def root_directory(self) -> Optional[str]:
@@ -337,7 +352,7 @@ class CloudDataContext(AbstractDataContext):
             resource_ref: GeCloudResourceRef = self._datasource_store.create(  # type: ignore[assignment]
                 datasource_config
             )
-            datasource_config.id_ = resource_ref.ge_cloud_id
+            datasource_config.id = resource_ref.ge_cloud_id
 
         self.config.datasources[name] = datasource_config  # type: ignore[index,assignment]
 
@@ -349,7 +364,7 @@ class CloudDataContext(AbstractDataContext):
             config, substitutions, self.DOLLAR_SIGN_ESCAPE_STRING
         )
 
-        # Round trip through schema validation and config creation to ensure "id_" is present
+        # Round trip through schema validation and config creation to ensure "id" is present
         #
         # Chetan - 20220804 - This logic is utilized with other id-enabled objects and should
         # be refactored to into the config/schema. Also, downstream methods should be refactored
