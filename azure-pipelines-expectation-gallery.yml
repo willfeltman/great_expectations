@@ -41,7 +41,7 @@ resources:
     ports:
       - 1433:1433
   - container: trino
-    image: trinodb/trino:379
+    image: trinodb/trino:latest
     ports:
       - 8088:8080
 
