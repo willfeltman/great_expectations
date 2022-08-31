@@ -145,7 +145,7 @@ stages:
               secureFile: 'aws_config_sandbox'
               retryCount: '2'
 
-          - bash: python ./build_gallery.py --backends "trino" --ignore-suppress --outfile-name "expectation_library_v3_trino.json" 2>&1 | tee output--build_gallery.txt ; grep -o "Took .* seconds to .*" output--build_gallery.txt | sort -k2,2nr > testing-times.txt ; grep -o "ERROR - (.*" output--build_gallery.txt | sort > testing-error-messages.txt; touch gallery-tracebacks.txt; grep -o "Expectation type.*" output--build_gallery.txt | sort > gallery-exp-types.txt
+          - bash: python ./build_gallery.py --backends "trino" --ignore-suppress --outfile-name "expectation_library_v3_trino.json" expect_column_mean_to_be_between expect_column_pair_values_to_be_equal expect_column_pair_values_to_be_in_set expect_column_stdev_to_be_between expect_column_values_to_be_between expect_column_values_to_be_in_type_list expect_column_values_to_be_unique 2>&1 | tee output--build_gallery.txt ; grep -o "Took .* seconds to .*" output--build_gallery.txt | sort -k2,2nr > testing-times.txt ; grep -o "ERROR - (.*" output--build_gallery.txt | sort > testing-error-messages.txt; touch gallery-tracebacks.txt; grep -o "Expectation type.*" output--build_gallery.txt | sort > gallery-exp-types.txt
             workingDirectory: $(Build.SourcesDirectory)/assets/scripts/
             displayName: 'Build Gallery'
             env:
