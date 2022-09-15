@@ -4,6 +4,7 @@ from great_expectations.datasource.data_connector.configured_asset_sql_data_conn
     ConfiguredAssetSqlDataConnector,
 )
 from great_expectations.execution_engine import ExecutionEngine
+from great_expectations.execution_engine.sqlalchemy_dialect import GESqlDialect
 from great_expectations.util import deep_filter_properties_iterable
 
 try:
@@ -67,8 +68,6 @@ class InferredAssetSqlDataConnector(ConfiguredAssetSqlDataConnector):
             name=name,
             datasource_name=datasource_name,
             execution_engine=execution_engine,
-            data_asset_name_prefix=data_asset_name_prefix,
-            data_asset_name_suffix=data_asset_name_suffix,
             include_schema_name=include_schema_name,
             splitter_method=splitter_method,
             splitter_kwargs=splitter_kwargs,
@@ -78,6 +77,9 @@ class InferredAssetSqlDataConnector(ConfiguredAssetSqlDataConnector):
             batch_spec_passthrough=batch_spec_passthrough,
             id=id,
         )
+
+        self._data_asset_name_prefix = data_asset_name_prefix
+        self._data_asset_name_suffix = data_asset_name_suffix
 
         self._excluded_tables = excluded_tables
         self._included_tables = included_tables
@@ -92,6 +94,14 @@ class InferredAssetSqlDataConnector(ConfiguredAssetSqlDataConnector):
         # Note: We should probably turn them into AssetConfig objects
 
         self._refresh_introspected_assets_cache()
+
+    @property
+    def data_asset_name_prefix(self) -> str:
+        return self._data_asset_name_prefix
+
+    @property
+    def data_asset_name_suffix(self) -> str:
+        return self._data_asset_name_suffix
 
     def _refresh_data_references_cache(self) -> None:
         self._refresh_introspected_assets_cache()
@@ -123,6 +133,8 @@ class InferredAssetSqlDataConnector(ConfiguredAssetSqlDataConnector):
                 properties={
                     "type": metadata["type"],
                     "table_name": table_name,
+                    "data_asset_name_prefix": self.data_asset_name_prefix,
+                    "data_asset_name_suffix": self.data_asset_name_suffix,
                     "include_schema_name": self.include_schema_name,
                     "schema_name": metadata["schema_name"],
                     "splitter_method": self.splitter_method,
@@ -235,7 +247,7 @@ class InferredAssetSqlDataConnector(ConfiguredAssetSqlDataConnector):
         # The following code fetches the names of external schemas and tables from a special table
         # 'svv_external_tables'.
         try:
-            if "redshift" == engine.dialect.name.lower():
+            if engine.dialect.name.lower() == GESqlDialect.REDSHIFT:
                 # noinspection SqlDialectInspection,SqlNoDataSourceInspection
                 result = engine.execute(
                     "select schemaname, tablename from svv_external_tables"
