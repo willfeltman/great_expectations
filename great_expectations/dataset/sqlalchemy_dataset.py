@@ -83,9 +83,9 @@ except (ImportError, KeyError):
     sqlalchemy_psycopg2 = None
 
 try:
-    import sqlalchemy_dremio.pyodbc
+    import sqlalchemy_dremio.flight
 
-    registry.register("dremio", "sqlalchemy_dremio.pyodbc", "dialect")
+    registry.register("dremio+flight", "sqlalchemy_dremio.flight", "DremioDialect_flight")
 except ImportError:
     sqlalchemy_dremio = None
 
@@ -607,7 +607,7 @@ class SqlAlchemyDataset(MetaSqlAlchemyDataset):
         elif self.engine.dialect.name.lower() == GESqlDialect.DREMIO:
             # WARNING: Dremio Support is experimental, functionality is not fully under test
             self.dialect = import_library_module(
-                module_name="sqlalchemy_dremio.pyodbc.dialect"
+                module_name="sqlalchemy_dremio.flight.DremioDialect_flight"
             )
         elif dialect_name == GESqlDialect.REDSHIFT:
             self.dialect = import_library_module(
@@ -2178,7 +2178,7 @@ WHERE
 
         try:
             # Dremio
-            if isinstance(self.sql_engine_dialect, sqlalchemy_dremio.pyodbc.dialect):
+            if isinstance(self.sql_engine_dialect, sqlalchemy_dremio.flight.DremioDialect_flight):
                 if positive:
                     return sa.func.REGEXP_MATCHES(sa.column(column), literal(regex))
                 else:

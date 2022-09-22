@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 try:
     import sqlalchemy_dremio.pyodbc
 
-    registry.register("dremio", "sqlalchemy_dremio.pyodbc", "dialect")
+    registry.register("dremio+flight", "sqlalchemy_dremio.flight", "DremioDialect_flight")
 except ImportError:
     sqlalchemy_dremio = None
 

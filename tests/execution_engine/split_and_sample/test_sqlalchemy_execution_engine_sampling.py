@@ -133,7 +133,7 @@ def test_sample_using_limit_builds_correct_query_where_clause_none(
             GESqlDialect.SNOWFLAKE: "snowflake://",
             GESqlDialect.REDSHIFT: "redshift+psycopg2://",
             GESqlDialect.AWSATHENA: f"awsathena+rest://@athena.us-east-1.amazonaws.com/some_test_db?s3_staging_dir=s3://some-s3-path/",
-            GESqlDialect.DREMIO: "dremio://",
+            GESqlDialect.DREMIO: "dremio+flight://",
             GESqlDialect.TERADATASQL: "teradatasql://",
             GESqlDialect.TRINO: "trino://",
             GESqlDialect.HIVE: "hive://",
@@ -167,8 +167,8 @@ def test_sample_using_limit_builds_correct_query_where_clause_none(
                 # WARNING: Dremio Support is experimental, functionality is not fully under test
                 # noinspection PyUnresolvedReferences
                 return import_library_module(
-                    module_name="sqlalchemy_dremio.pyodbc"
-                ).dialect()
+                    module_name="sqlalchemy_dremio.flight"
+                ).DremioDialect_flight
             # NOTE: AJB 20220512 Redshift dialect is not yet fully supported.
             # The below throws an `AttributeError: type object 'RedshiftDialect_psycopg2' has no attribute 'positional'`
             # elif dialect_name == "redshift":

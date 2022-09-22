@@ -116,11 +116,11 @@ except ImportError:
     sqlalchemy_redshift = None
 
 try:
-    import sqlalchemy_dremio.pyodbc
+    import sqlalchemy_dremio.flight
 
     if sa:
         sa.dialects.registry.register(
-            GESqlDialect.DREMIO, "sqlalchemy_dremio.pyodbc", "dialect"
+            "dremio+flight", "sqlalchemy_dremio.flight", "DremioDialect_flight"
         )
 except ImportError:
     sqlalchemy_dremio = None
@@ -334,7 +334,7 @@ class SqlAlchemyExecutionEngine(ExecutionEngine):
         elif self.dialect_name == GESqlDialect.DREMIO:
             # WARNING: Dremio Support is experimental, functionality is not fully under test
             self.dialect_module = import_library_module(
-                module_name="sqlalchemy_dremio.pyodbc"
+                module_name="sqlalchemy_dremio.flight"
             )
         elif self.dialect_name == GESqlDialect.REDSHIFT:
             self.dialect_module = import_library_module(
