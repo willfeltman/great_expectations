@@ -480,7 +480,10 @@ class AbstractDataContext(ABC):
         """
 
         datasource_config_dict: dict = datasourceConfigSchema.dump(datasource.config)
-        datasource_config = DatasourceConfig(**datasource_config_dict)
+        # Manually need to add in class name to the config since it is not part of the runtime obj
+        datasource_config_dict["class_name"] = datasource.__class__.__name__
+
+        datasource_config = datasourceConfigSchema.load(datasource_config_dict)
         datasource_name: str = datasource.name
 
         updated_datasource_config_from_store: DatasourceConfig = self._datasource_store.set(  # type: ignore[attr-defined]
@@ -956,6 +959,7 @@ class AbstractDataContext(ABC):
             include_rendered_content=include_rendered_content,
         )
 
+    # noinspection PyUnusedLocal
     def get_validator_using_batch_list(
         self,
         expectation_suite: ExpectationSuite,
@@ -979,6 +983,7 @@ class AbstractDataContext(ABC):
                 """Validator could not be created because BatchRequest returned an empty batch_list.
                 Please check your parameters and try again."""
             )
+
         include_rendered_content = (
             self._determine_if_expectation_validation_result_include_rendered_content(
                 include_rendered_content=include_rendered_content
