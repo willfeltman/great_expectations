@@ -10,6 +10,7 @@ from ruamel.yaml import YAML, YAMLError
 from ruamel.yaml.constructor import DuplicateKeyError
 
 import great_expectations.exceptions as ge_exceptions
+from great_expectations.core._docs_decorators import public_api
 from great_expectations.data_context.data_context.base_data_context import (
     BaseDataContext,
 )
@@ -161,7 +162,32 @@ class DataContext(BaseDataContext):
         return os.path.isfile(config_var_path)
 
     @classmethod
+    @public_api
     def write_config_variables_template_to_disk(cls, uncommitted_dir: str) -> None:
+        """THIS IS JUST A DEMO DOCSTRING WITH EXAMPLES.
+        Helper function to convert an object to one that is json serializable
+
+        Args:
+            data: an object to attempt to convert a corresponding json-serializable object
+        Returns:
+            converted object
+        Warning:
+            data may also be converted in place
+        Examples:
+            >>> convert_to_json_serializable(1)
+            1
+
+            >>> convert_to_json_serializable("hello")
+            "hello"
+
+            >>> convert_to_json_serializable(Polygon([(0, 0), (2, 0), (2, 2), (0, 2)]))
+            "POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))"
+
+
+        """
+
+
+
         os.makedirs(uncommitted_dir, exist_ok=True)
         config_var_file = os.path.join(uncommitted_dir, "config_variables.yml")
         with open(config_var_file, "w") as template:

@@ -1,0 +1,9 @@
+site_name: Great Expectations API Documentation
+
+theme:
+  name: "material"
+
+plugins:
+  - mkdocstrings
+
+docs_dir: docs/mkdocs

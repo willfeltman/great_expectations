@@ -1,0 +1,92 @@
+<html>
+<head>
+
+    <link href="_static/styles/theme.css?digest=1e1de1a1873e13ef5536" rel="stylesheet"></link>
+    <link href="_static/styles/pydata-sphinx-theme.css?digest=1e1de1a1873e13ef5536" rel="stylesheet"></link>
+</head>
+
+<section id="datacontext-write-config-variables-template-to-disk">
+    <h1>DataContext.write_config_variables_template_to_disk<a class="headerlink"
+                                                              href="#datacontext-write-config-variables-template-to-disk"
+                                                              title="Permalink to this headline">#</a>
+    </h1>
+    <dl class="py method">
+        <dt class="sig sig-object py"
+            id="great_expectations.data_context.data_context.DataContext.write_config_variables_template_to_disk">
+            <em class="property"><span class="pre">classmethod</span></em> <span
+            class="sig-prename descclassname"><span
+            class="pre">DataContext.</span></span><span class="sig-name descname"><span
+            class="pre">write_config_variables_template_to_disk</span></span><span
+            class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+            class="pre">uncommitted_dir</span></span><span class="p"><span
+            class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span
+            class="sig-paren">)</span> <span class="sig-return"><span
+            class="sig-return-icon">→</span> <span class="sig-return-typehint"><span
+            class="pre">None</span></span></span><a class="headerlink"
+                                                    href="#great_expectations.data_context.data_context.DataContext.write_config_variables_template_to_disk"
+                                                    title="Permalink to this definition">#</a>
+        </dt>
+        <dd>
+            <dl>
+                <dt>THIS IS JUST A DEMO DOCSTRING WITH EXAMPLES.</dt>
+                <dd>
+                    <p>Helper function to convert an object to one that is json
+                        serializable</p>
+                    <dl>
+                        <dt>Args:</dt>
+                        <dd>
+                            <p>data: an object to attempt to convert a corresponding
+                                json-serializable object</p>
+                        </dd>
+                        <dt>Returns:</dt>
+                        <dd>
+                            <p>converted object</p>
+                        </dd>
+                        <dt>Warning:</dt>
+                        <dd>
+                            <p>data may also be converted in place</p>
+                        </dd>
+                        <dt>Examples:</dt>
+                        <dd>
+                            <div class="doctest highlight-default notranslate">
+                                <div class="highlight">
+                                <pre><span class="gp">&gt;&gt;&gt; </span><span
+                                    class="n">convert_to_json_serializable</span><span class="p">(</span><span
+                                    class="mi">1</span><span class="p">)</span>
+<span class="go">1</span>
+</pre>
+                                </div>
+                            </div>
+                            <div class="doctest highlight-default notranslate">
+                                <div class="highlight">
+                                <pre><span class="gp">&gt;&gt;&gt; </span><span
+                                    class="n">convert_to_json_serializable</span><span class="p">(</span><span
+                                    class="s2">"hello"</span><span class="p">)</span><br></br>
+<span class="go">"hello"</span>
+</pre>
+                                </div>
+                            </div>
+                            <div class="doctest highlight-default notranslate">
+                                <div class="highlight">
+                                <pre><span class="gp">&gt;&gt;&gt; </span><span
+                                    class="n">convert_to_json_serializable</span><span class="p">(</span><span
+                                    class="n">Polygon</span><span class="p">([(</span><span class="mi">0</span><span
+                                    class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span
+                                    class="p">(</span><span class="mi">2</span><span class="p">,</span> <span
+                                    class="mi">0</span><span class="p">),</span> <span class="p">(</span><span
+                                    class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span
+                                    class="p">),</span> <span class="p">(</span><span class="mi">0</span><span
+                                    class="p">,</span> <span class="mi">2</span><span class="p">)]))</span>
+<span class="go">"POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))"</span>
+</pre>
+                                </div>
+                            </div>
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+            <p>–Public API–</p>
+        </dd>
+    </dl>
+</section>
+</html>

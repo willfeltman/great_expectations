@@ -4,6 +4,14 @@ requires = ["setuptools", "wheel"]
 # https://github.com/python-versioneer/python-versioneer/issues/193
 # build-backend = "setuptools.build_meta"
 
+[project.optional-dependencies]
+doc = [
+    "sphinx~=4.5.0",
+    "pydata-sphinx-theme==0.11.0",
+    "myst-parser",
+    "nbsphinx",
+]
+
 [tool.black]
 extend_excludes = '''(docs/.*|tests/.*.fixture|.*.ge_store_backend_id)'''
 

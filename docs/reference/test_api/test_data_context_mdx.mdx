@@ -1,0 +1,146 @@
+
+  <section id="datacontext">
+<h1>DataContext<a class="headerlink" href="#datacontext" title="Permalink to this headline">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="great_expectations.data_context.data_context.DataContext">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">great_expectations.data_context.data_context.</span></span><span class="sig-name descname"><span class="pre">DataContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context_root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ge_cloud_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ge_cloud_base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ge_cloud_access_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ge_cloud_organization_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#great_expectations.data_context.data_context.DataContext" title="Permalink to this definition">#</a></dt>
+<dd><p>A DataContext represents a Great Expectations project. It is the primary entry point for a Great Expectations
+deployment, with configurations and methods for all supporting components.</p>
+<p>The DataContext is configured via a yml file stored in a directory called great_expectations; this configuration
+file as well as managed Expectation Suites should be stored in version control. There are other ways to create a
+Data Context that may be better suited for your particular deployment e.g. ephemerally or backed by GE Cloud
+(coming soon). Please refer to our documentation for more details.</p>
+<p>You can Validate data or generate Expectations using Execution Engines including:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>SQL (multiple dialects supported)</p></li>
+<li><p>Spark</p></li>
+<li><p>Pandas</p></li>
+</ul>
+</div></blockquote>
+<p>Your data can be stored in common locations including:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>databases / data warehouses</p></li>
+<li><p>files in s3, GCS, Azure, local storage</p></li>
+<li><p>dataframes (spark and pandas) loaded into memory</p></li>
+</ul>
+</div></blockquote>
+<p>Please see our documentation for examples on how to set up Great Expectations, connect to your data,
+create Expectations, and Validate data.</p>
+<p>Other configuration options you can apply to a DataContext besides how to access data include things like where to
+store Expectations, Profilers, Checkpoints, Metrics, Validation Results and Data Docs and how those Stores are
+configured. Take a look at our documentation for more configuration options.</p>
+<p>You can create or load a DataContext from disk via the following:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">import</span> <span class="pre">great_expectations</span> <span class="pre">as</span> <span class="pre">ge</span>
+<span class="pre">ge.get_context()</span>
+<span class="pre">`</span></code></p>
+<p>–Public API–</p>
+<dl class="option-list">
+<dt><kbd><span class="option">--Documentation--</span></kbd></dt>
+<dd><p><a class="reference external" href="https://docs.greatexpectations.io/docs/terms/data_context">https://docs.greatexpectations.io/docs/terms/data_context</a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="great_expectations.data_context.data_context.DataContext.create">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usage_statistics_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#great_expectations.data_context.data_context.DataContext" title="great_expectations.data_context.data_context.data_context.DataContext"><span class="pre">great_expectations.data_context.data_context.data_context.DataContext</span></a></span></span><a class="headerlink" href="#great_expectations.data_context.data_context.DataContext.create" title="Permalink to this definition">#</a></dt>
+<dd><p>Build a new great_expectations directory and DataContext object in the provided project_root_dir.</p>
+<p><cite>create</cite> will create a new “great_expectations” directory in the provided folder, provided one does not
+already exist. Then, it will initialize a new DataContext in that folder and write the resulting config.</p>
+<p>–Public API–</p>
+<dl class="option-list">
+<dt><kbd><span class="option">--Documentation--</span></kbd></dt>
+<dd><p><a class="reference external" href="https://docs.greatexpectations.io/docs/terms/data_context">https://docs.greatexpectations.io/docs/terms/data_context</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>project_root_dir</strong> – path to the root directory in which to create a new great_expectations directory</p></li>
+<li><p><strong>usage_statistics_enabled</strong> – boolean directive specifying whether or not to gather usage statistics</p></li>
+<li><p><strong>runtime_environment</strong> – a dictionary of config variables that override both those set in
+config_variables.yml and the environment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DataContext</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="great_expectations.data_context.data_context.DataContext.test_yaml_config">
+<span class="sig-name descname"><span class="pre">test_yaml_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yaml_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretty_print</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'instantiated_class'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'report_object'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'instantiated_class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shorten_tracebacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#great_expectations.data_context.data_context.DataContext.test_yaml_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Convenience method for testing yaml configs</p>
+<p>test_yaml_config is a convenience method for configuring the moving
+parts of a Great Expectations deployment. It allows you to quickly
+test out configs for system components, especially Datasources,
+Checkpoints, and Stores.</p>
+<p>For many deployments of Great Expectations, these components (plus
+Expectations) are the only ones you’ll need.</p>
+<p>test_yaml_config is mainly intended for use within notebooks and tests.</p>
+<p>–Public API–</p>
+<dl class="option-list">
+<dt><kbd><span class="option">--Documentation--</span></kbd></dt>
+<dd><p><a class="reference external" href="https://docs.greatexpectations.io/docs/terms/data_context">https://docs.greatexpectations.io/docs/terms/data_context</a>
+<a class="reference external" href="https://docs.greatexpectations.io/docs/guides/validation/checkpoints/how_to_configure_a_new_checkpoint_using_test_yaml_config">https://docs.greatexpectations.io/docs/guides/validation/checkpoints/how_to_configure_a_new_checkpoint_using_test_yaml_config</a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yaml_config</strong> – A string containing the yaml config to be tested</p></li>
+<li><p><strong>name</strong> – (Optional) A string containing the name of the component to instantiate</p></li>
+<li><p><strong>pretty_print</strong> – Determines whether to print human-readable output</p></li>
+<li><p><strong>return_mode</strong> – Determines what type of object test_yaml_config will return.
+Valid modes are “instantiated_class” and “report_object”</p></li>
+<li><p><strong>shorten_tracebacks</strong> – If true, catch any errors during instantiation and print only the
+last element of the traceback stack. This can be helpful for
+rapid iteration on configs in a notebook, because it can remove
+the need to scroll up and down a lot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The instantiated component (e.g. a Datasource)
+OR
+a json object containing metadata from the component’s self_check method.
+The returned object is determined by return_mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="great_expectations.data_context.data_context.DataContext.write_config_variables_template_to_disk">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_config_variables_template_to_disk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uncommitted_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#great_expectations.data_context.data_context.DataContext.write_config_variables_template_to_disk" title="Permalink to this definition">#</a></dt>
+<dd><dl>
+<dt>THIS IS JUST A DEMO DOCSTRING WITH EXAMPLES.</dt><dd><p>Helper function to convert an object to one that is json serializable</p>
+<dl>
+<dt>Args:</dt><dd><p>data: an object to attempt to convert a corresponding json-serializable object</p>
+</dd>
+<dt>Returns:</dt><dd><p>converted object</p>
+</dd>
+<dt>Warning:</dt><dd><p>data may also be converted in place</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convert_to_json_serializable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convert_to_json_serializable</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+<span class="go">&quot;hello&quot;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convert_to_json_serializable</span><span class="p">(</span><span class="n">Polygon</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]))</span>
+<span class="go">&quot;POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))&quot;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>–Public API–</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
