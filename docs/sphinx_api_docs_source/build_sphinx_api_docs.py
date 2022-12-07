@@ -92,7 +92,7 @@ class SphinxInvokeDocsBuilder:
 
     def build_html_api_docs_in_temp_folder(self):
         """Builds html api documentation in temporary folder."""
-        cmd = f"sphinx-build -M html ./ {self.temp_sphinx_html_dir} -E"
+        cmd = f"sphinx-multiversion ./ {self.temp_sphinx_html_dir}"
         self.ctx.run(cmd, echo=True, pty=True)
         logger.debug("Raw Sphinx HTML generated.")
 

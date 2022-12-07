@@ -6,15 +6,16 @@
 
 # -- Update syspath
 import os
+import pathlib
 import sys
 
 from great_expectations.core._docs_decorators import WHITELISTED_TAG
 
 
+base_repository_path = os.path.abspath("../../")
 def _prepend_base_repository_dir_to_sys_path():
     """Add great_expectations base repo dir to the front of sys path. Used for docs processing."""
-    sys.path.insert(0, os.path.abspath("../../"))
-
+    sys.path.insert(0, base_repository_path)
 
 _prepend_base_repository_dir_to_sys_path()
 
@@ -32,6 +33,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "myst_parser",
+    "sphinx_multiversion",
 ]
 
 templates_path = ["_templates"]
@@ -44,7 +46,26 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "README.md"]
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 
+# -- API Docs Versioning Config ----------------------------------------------
+# Regex is to filter tags for v0.15.0 and later
+smv_tag_whitelist = r'^(?:0\.(?:[1-9][5-9]|[2-9]\d|\d{3,})\.\d+)$|^(?:[1-9]\.\d+\.\d+|\d{2,}\.\d+\.\d+)$'
+smv_branch_whitelist = None
+smv_remote_whitelist = r'^.*$'
+smv_released_pattern = r'^tags/.*$'  # Tags only
+smv_prefer_remote_refs = True
 
+
+def _get_deployment_version_from_file() -> str:
+    deployment_version_path = pathlib.Path(base_repository_path) / "great_expectations" / "deployment_version"
+    with open(deployment_version_path) as f:
+        deployment_version = f.readline().strip("\n")
+    return deployment_version
+
+
+smv_latest_version = _get_deployment_version_from_file()
+
+
+# -- Docstring Processing -------------------------------------------------
 # Skip autodoc unless part of the Public API
 DOCUMENTATION_TAG = "--Documentation--"
 
