@@ -54,7 +54,7 @@ class ExpectQueryToMatchSomeCriteria(QueryExpectation):
     }
 
     def validate_configuration(
-        self, configuration: Optional[ExpectationConfiguration]
+        self, configuration: Optional[ExpectationConfiguration] = None
     ) -> None:
         """
         Validates that a configuration has been set, and sets a configuration if it has yet to be set. Ensures that
@@ -108,10 +108,10 @@ class ExpectQueryToMatchSomeCriteria(QueryExpectation):
             "@your_name_here",  # Don't forget to add your github handle here!
         ],
     }
-    # </snippet
+    # </snippet>
 
 
 if __name__ == "__main__":
     # <snippet>
     ExpectQueryToMatchSomeCriteria().print_diagnostic_checklist()
-    # </snippet
+    # </snippet>
