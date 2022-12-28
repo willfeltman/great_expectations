@@ -29,6 +29,7 @@ logger.setLevel(logging.DEBUG)
 
 expectation_tracebacks = StringIO()
 expectation_checklists = StringIO()
+expectation_docstrings = StringIO()
 
 
 def execute_shell_command(command: str) -> int:
@@ -116,6 +117,9 @@ def get_expectation_file_info_dict(
 
     for file_path in sorted(files_found):
         file_path = file_path.replace(f"{repo_path}{os.path.sep}", "")
+        package_name = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
+        if package_name == "expectations":
+            package_name = "core"
         name = os.path.basename(file_path).replace(".py", "")
         if only_these_expectations and name not in only_these_expectations:
             continue
@@ -132,9 +136,10 @@ def get_expectation_file_info_dict(
             .decode("utf-8")
             .strip(),
             "path": file_path,
+            "package": package_name,
         }
         logger.debug(
-            f"{name} was created {result[name]['created_at']} and updated {result[name]['updated_at']}"
+            f"{name} ({package_name}) was created {result[name]['created_at']} and updated {result[name]['updated_at']}"
         )
         with open(file_path) as fp:
             text = fp.read()
@@ -352,8 +357,18 @@ def build_gallery(
             )
             expectation_checklists.write(f"{checklist_string}\n")
             if diagnostics["description"]["docstring"]:
+                expectation_docstrings.write(
+                    "\n\n" + "=" * 80 + f"\n\n{expectation} ({group})\n"
+                )
+                expectation_docstrings.write(
+                    f"{diagnostics['description']['docstring']}\n"
+                )
                 diagnostics["description"]["docstring"] = format_docstring_to_markdown(
                     diagnostics["description"]["docstring"]
+                )
+                expectation_docstrings.write("\n" + "." * 80 + "\n\n")
+                expectation_docstrings.write(
+                    f"{diagnostics['description']['docstring']}\n"
                 )
         except Exception:
             logger.error(f"Failed to run diagnostics for: {expectation}")
@@ -371,6 +386,9 @@ def build_gallery(
                 gallery_info[expectation]["updated_at"] = expectation_file_info[
                     expectation
                 ]["updated_at"]
+                gallery_info[expectation]["package"] = expectation_file_info[
+                    expectation
+                ]["package"]
                 gallery_info[expectation]["exp_type"] = expectation_file_info[
                     expectation
                 ].get("exp_type")
@@ -583,7 +601,7 @@ def _disable_progress_bars() -> Tuple[str, DataContext]:
     "--outfile-name",
     "-o",
     "outfile_name",
-    default="expectation_library_v2.json",
+    default="expectation_library_v2--staging.json",
     help="Name for the generated JSON file",
 )
 @click.option(
@@ -594,7 +612,7 @@ def _disable_progress_bars() -> Tuple[str, DataContext]:
 )
 @click.argument("args", nargs=-1)
 def main(**kwargs):
-    """Find all Expectations, run their diagnostics methods, and generate expectation_library_v2.json
+    """Find all Expectations, run their diagnostics methods, and generate expectation_library_v2--staging.json
 
     - args: snake_name of specific Expectations to include (useful for testing)
     """
@@ -602,7 +620,8 @@ def main(**kwargs):
     if kwargs["backends"]:
         backends = [name.strip() for name in kwargs["backends"].split(",")]
 
-    context_dir, context = _disable_progress_bars()
+    # context_dir, context = _disable_progress_bars()
+    context = None
 
     gallery_info = build_gallery(
         include_core=not kwargs["no_core"],
@@ -615,17 +634,21 @@ def main(**kwargs):
     )
     tracebacks = expectation_tracebacks.getvalue()
     checklists = expectation_checklists.getvalue()
+    docstrings = expectation_docstrings.getvalue()
     if tracebacks != "":
         with open("./gallery-tracebacks.txt", "w") as outfile:
             outfile.write(tracebacks)
     if checklists != "":
         with open("./checklists.txt", "w") as outfile:
             outfile.write(checklists)
+    if docstrings != "":
+        with open("./docstrings.txt", "w") as outfile:
+            outfile.write(docstrings)
     with open(f"./{kwargs['outfile_name']}", "w") as outfile:
         json.dump(gallery_info, outfile, indent=4)
 
-    print(f"Deleting {context_dir}")
-    shutil.rmtree(context_dir)
+    # print(f"Deleting {context_dir}")
+    # shutil.rmtree(context_dir)
 
 
 if __name__ == "__main__":
