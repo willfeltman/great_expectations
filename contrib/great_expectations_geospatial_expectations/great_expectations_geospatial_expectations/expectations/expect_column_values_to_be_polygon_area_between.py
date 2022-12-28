@@ -6,19 +6,21 @@ from shapely.geometry import mapping, shape
 from great_expectations.core import ExpectationValidationResult
 from great_expectations.core.expectation_configuration import ExpectationConfiguration
 from great_expectations.execution_engine import PandasExecutionEngine
-from great_expectations.expectations.expectation import ColumnMapExpectation
+from great_expectations.expectations.expectation import (
+    ColumnMapExpectation,
+    render_evaluation_parameter_string,
+)
 from great_expectations.expectations.metrics import (
     ColumnMapMetricProvider,
     column_condition_partial,
 )
-from great_expectations.expectations.util import render_evaluation_parameter_string
-from great_expectations.render.renderer.renderer import renderer
-from great_expectations.render.types import (
+from great_expectations.render import (
     RenderedBulletListContent,
     RenderedGraphContent,
     RenderedStringTemplateContent,
     RenderedTableContent,
 )
+from great_expectations.render.renderer.renderer import renderer
 from great_expectations.render.util import num_to_str, substitute_none_for_missing
 
 
@@ -67,7 +69,10 @@ class ColumnValuesPolygonArea(ColumnMapMetricProvider):
 # This class defines the Expectation itself
 # The main business logic for calculation lives here.
 class ExpectColumnValuesToBePolygonAreaBetween(ColumnMapExpectation):
-    """This expectation will compute the area of each polygon/multipolygon in square kilometers and check if it's between two values."""
+    """Expect the area of polygons in the column are between two specified values.
+
+    This expectation will compute the area of each polygon/multipolygon in square kilometers and check if it's between two values.
+    """
 
     world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     # Index by name to make example data shorter
@@ -192,7 +197,6 @@ class ExpectColumnValuesToBePolygonAreaBetween(ColumnMapExpectation):
         cls,
         configuration: ExpectationConfiguration = None,
         result: ExpectationValidationResult = None,
-        language: str = None,
         runtime_configuration: dict = None,
         **kwargs,
     ) -> List[
@@ -207,9 +211,8 @@ class ExpectColumnValuesToBePolygonAreaBetween(ColumnMapExpectation):
         ]
     ]:
         runtime_configuration = runtime_configuration or {}
-        include_column_name = runtime_configuration.get("include_column_name", True)
         include_column_name = (
-            include_column_name if include_column_name is not None else True
+            False if runtime_configuration.get("include_column_name") is False else True
         )
         styling = runtime_configuration.get("styling")
         params = substitute_none_for_missing(
