@@ -149,11 +149,7 @@ stages:
             workingDirectory: $(Build.SourcesDirectory)/assets/scripts/
             displayName: 'Build Gallery Quick Check'
 
-<<<<<<< HEAD
           - bash: python ./build_gallery.py --backends "mysql" --ignore-suppress --outfile-name "expectation_library_v3_mysql.json" 2>&1 | tee output--build_gallery.txt ; grep -o "Took .* seconds to .*" output--build_gallery.txt | sort -k2,2nr > testing-times.txt ; grep -o "ERROR - (.*" output--build_gallery.txt | sort > testing-error-messages.txt; touch gallery-tracebacks.txt; grep -o "Expectation type.*" output--build_gallery.txt | sort > gallery-exp-types.txt
-=======
-          - bash: python ./build_gallery.py --outfile-name "expectation_library_v2--staging.json" 2>&1 | tee output--build_gallery.txt ; grep -o "Took .* seconds to .*" output--build_gallery.txt | sort -k2,2nr > testing-times.txt ; grep -o "ERROR - (.*" output--build_gallery.txt | sort > testing-error-messages.txt; touch gallery-tracebacks.txt; grep -o "Expectation type.*" output--build_gallery.txt | sort > gallery-exp-types.txt
->>>>>>> origin/develop
             workingDirectory: $(Build.SourcesDirectory)/assets/scripts/
             displayName: 'Build Gallery'
             env:
