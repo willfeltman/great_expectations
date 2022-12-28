@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from great_expectations.rule_based_profiler.config import ParameterBuilderConfig
 from great_expectations.rule_based_profiler.data_assistant import DataAssistant
@@ -27,6 +27,9 @@ from great_expectations.rule_based_profiler.parameter_container import (
 )
 from great_expectations.rule_based_profiler.rule import Rule
 from great_expectations.validator.validator import Validator
+
+if TYPE_CHECKING:
+    from great_expectations.rule_based_profiler.domain_builder import DomainBuilder
 
 
 class VolumeDataAssistant(DataAssistant):
@@ -88,7 +91,7 @@ class VolumeDataAssistant(DataAssistant):
         """
         # Step-1: Instantiate "TableDomainBuilder" object.
 
-        table_domain_builder = TableDomainBuilder(
+        table_domain_builder: DomainBuilder = TableDomainBuilder(
             data_context=None,
         )
 
@@ -107,6 +110,7 @@ class VolumeDataAssistant(DataAssistant):
         ]
         table_row_count_range_parameter_builder_for_validations: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.build_numeric_metric_range_multi_batch_parameter_builder(
             metric_name=None,
+            suffix=None,
             metric_value_kwargs=None,
             evaluation_parameter_builder_configs=evaluation_parameter_builder_configs,
         )
@@ -168,7 +172,7 @@ class VolumeDataAssistant(DataAssistant):
         """
         # Step-1: Instantiate "CategoricalColumnDomainBuilder" for selecting columns containing "FEW" discrete values.
 
-        categorical_column_type_domain_builder: CategoricalColumnDomainBuilder = (
+        categorical_column_type_domain_builder: DomainBuilder = (
             CategoricalColumnDomainBuilder(
                 include_column_names=None,
                 exclude_column_names=None,
@@ -201,6 +205,7 @@ class VolumeDataAssistant(DataAssistant):
         ]
         column_distinct_values_count_range_parameter_builder_for_validations: ParameterBuilder = DataAssistant.commonly_used_parameter_builders.build_numeric_metric_range_multi_batch_parameter_builder(
             metric_name=None,
+            suffix=None,
             metric_value_kwargs=None,
             evaluation_parameter_builder_configs=evaluation_parameter_builder_configs,
         )
