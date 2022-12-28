@@ -30,9 +30,9 @@ This will bring up the following prompt:
 
 ```console
 How would you like to create your Expectation Suite?
-    1. Manually, without interacting with a sample batch of data (default)
-    2. Interactively, with a sample batch of data
-    3. Automatically, using a profiler
+    1. Manually, without interacting with a sample Batch of data (default)
+    2. Interactively, with a sample Batch of data
+    3. Automatically, using a Data Assistant
 : 3
 ```
 
@@ -97,7 +97,7 @@ Since notebooks are often less permanent, creating Expectations in a notebook al
 
 2. The second cell allows you to specify which columns you want to **ignore** when creating Expectations. For our tutorial, we're going to ensure that the number of passengers recorded in our data is reasonable.  To do this, we'll want our Data Assistant to examine the `passenger_count` column and determine just what a reasonable range _is_ based on our January data. **Let’s comment just this one line to include it**:
 
-```python file=../../../tests/integration/docusaurus/tutorials/getting-started/getting_started.py#L86-L105
+```python file=../../../tests/integration/docusaurus/tutorials/getting-started/getting_started.py#L89-L108
 ```
 
 **Cell 3**
