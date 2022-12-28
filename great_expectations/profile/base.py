@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import logging
 import time
@@ -13,6 +15,7 @@ from great_expectations.core.run_identifier import RunIdentifier
 from great_expectations.data_asset import DataAsset
 from great_expectations.dataset import Dataset
 from great_expectations.exceptions import GreatExpectationsError
+from great_expectations.render.renderer_configuration import MetaNotesFormat
 from great_expectations.validator.validator import Validator
 
 logger = logging.getLogger(__name__)
@@ -53,7 +56,7 @@ class OrderedProfilerCardinality(OrderedEnum):
     @classmethod
     def get_basic_column_cardinality(
         cls, num_unique=0, pct_unique=0
-    ) -> "OrderedProfilerCardinality":  # noqa: F821
+    ) -> OrderedProfilerCardinality:
         """
         Takes the number and percentage of unique values in a column and returns the column cardinality.
         If you are unexpectedly returning a cardinality of "None", ensure that you are passing in values for both
@@ -198,7 +201,7 @@ class DatasetProfiler(DataAssetProfiler):
 
         if "notes" not in expectation_suite.meta:
             expectation_suite.meta["notes"] = {
-                "format": "markdown",
+                "format": MetaNotesFormat.MARKDOWN,
                 "content": [
                     "_To add additional notes, edit the <code>meta.notes.content</code> field in the appropriate Expectation json file._"
                     # TODO: be more helpful to the user by piping in the filename.
