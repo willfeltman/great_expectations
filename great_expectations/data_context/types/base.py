@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import datetime
 import enum
@@ -5,7 +7,19 @@ import itertools
 import json
 import logging
 import uuid
-from typing import TYPE_CHECKING, Any, Dict, List, MutableMapping, Optional, Set, Union
+import warnings
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    MutableMapping,
+    Optional,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+)
 from uuid import UUID
 
 from marshmallow import (
@@ -19,6 +33,7 @@ from marshmallow import (
     validates_schema,
 )
 from marshmallow.validate import OneOf
+from marshmallow.warnings import RemovedInMarshmallow4Warning
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.compat import StringIO
@@ -27,10 +42,7 @@ import great_expectations.exceptions as ge_exceptions
 from great_expectations.core.batch import BatchRequestBase, get_batch_request_as_dict
 from great_expectations.core.configuration import AbstractConfig, AbstractConfigSchema
 from great_expectations.core.run_identifier import RunIdentifier
-from great_expectations.core.util import (
-    convert_to_json_serializable,
-    get_datetime_string_from_strftime_format,
-)
+from great_expectations.core.util import convert_to_json_serializable
 from great_expectations.types import DictDot, SerializableDictDot, safe_deep_copy
 from great_expectations.types.configurations import ClassConfigSchema
 from great_expectations.util import deep_filter_properties_iterable
@@ -38,7 +50,7 @@ from great_expectations.util import deep_filter_properties_iterable
 try:
     from pyspark.sql.types import StructType
 except ImportError:
-    StructType = None  # type: ignore
+    StructType = None
 
 if TYPE_CHECKING:
     from io import TextIOWrapper
@@ -51,8 +63,8 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-CURRENT_GE_CONFIG_VERSION = 3
-FIRST_GE_CONFIG_VERSION_WITH_CHECKPOINT_STORE = 3
+CURRENT_GX_CONFIG_VERSION = 3
+FIRST_GX_CONFIG_VERSION_WITH_CHECKPOINT_STORE = 3
 CURRENT_CHECKPOINT_CONFIG_VERSION = 1
 MINIMUM_SUPPORTED_CONFIG_VERSION = 2
 DEFAULT_USAGE_STATISTICS_URL = (
@@ -60,12 +72,19 @@ DEFAULT_USAGE_STATISTICS_URL = (
 )
 
 
-def object_to_yaml_str(obj):  # type: ignore[no-untyped-def]
+# NOTE 121822: (kilo59) likely won't moving to marshmallow v4 so we don't care about this
+warnings.simplefilter(action="ignore", category=RemovedInMarshmallow4Warning)
+
+
+def object_to_yaml_str(obj):
     output_str: str
     with StringIO() as string_stream:
         yaml.dump(obj, string_stream)
         output_str = string_stream.getvalue()
     return output_str
+
+
+BYC = TypeVar("BYC", bound="BaseYamlConfig")
 
 
 class BaseYamlConfig(SerializableDictDot):
@@ -81,7 +100,7 @@ class BaseYamlConfig(SerializableDictDot):
         self._commented_map = commented_map
 
     @classmethod
-    def _get_schema_instance(cls) -> Schema:
+    def _get_schema_instance(cls: Type[BYC]) -> Schema:
         if not issubclass(cls.get_schema_class(), Schema):
             raise ge_exceptions.InvalidConfigError(
                 "Invalid type: A configuration schema class needs to inherit from the Marshmallow Schema class."
@@ -106,11 +125,11 @@ class BaseYamlConfig(SerializableDictDot):
 
     @classmethod
     def from_commented_map(
-        cls, commented_map: Union[CommentedMap, Dict]
-    ) -> "BaseYamlConfig":
+        cls: Type[BYC], commented_map: Union[CommentedMap, Dict]
+    ) -> BYC:
         try:
             schema_instance: Schema = cls._get_schema_instance()
-            config: Union[dict, BaseYamlConfig] = schema_instance.load(commented_map)
+            config: Union[dict, BYC] = schema_instance.load(commented_map)
             if isinstance(config, dict):
                 return cls.get_config_class()(commented_map=commented_map, **config)
 
@@ -151,16 +170,16 @@ class BaseYamlConfig(SerializableDictDot):
         return self._get_schema_validated_updated_commented_map()
 
     @classmethod
-    def get_config_class(cls):  # type: ignore[no-untyped-def]
+    def get_config_class(cls: Type) -> Type:
         raise NotImplementedError
 
     @classmethod
-    def get_schema_class(cls):  # type: ignore[no-untyped-def]
+    def get_schema_class(cls):
         raise NotImplementedError
 
 
 class SorterConfig(DictDot):
-    def __init__(  # type: ignore[no-untyped-def]
+    def __init__(
         self,
         name,
         class_name=None,
@@ -192,35 +211,35 @@ class SorterConfig(DictDot):
             self._datetime_format = datetime_format
 
     @property
-    def name(self):  # type: ignore[no-untyped-def]
+    def name(self):
         return self._name
 
     @property
-    def module_name(self):  # type: ignore[no-untyped-def]
+    def module_name(self):
         return self._module_name
 
     @property
-    def class_name(self):  # type: ignore[no-untyped-def]
+    def class_name(self):
         return self._class_name
 
     @property
-    def orderby(self):  # type: ignore[no-untyped-def]
+    def orderby(self):
         return self._orderby
 
     @property
-    def reference_list(self):  # type: ignore[no-untyped-def]
+    def reference_list(self):
         return self._reference_list
 
     @property
-    def order_keys_by(self):  # type: ignore[no-untyped-def]
+    def order_keys_by(self):
         return self._order_keys_by
 
     @property
-    def key_reference_list(self):  # type: ignore[no-untyped-def]
+    def key_reference_list(self):
         return self._key_reference_list
 
     @property
-    def datetime_format(self):  # type: ignore[no-untyped-def]
+    def datetime_format(self):
         return self._datetime_format
 
 
@@ -380,6 +399,20 @@ class AssetConfigSchema(Schema):
     schema_name = fields.String(required=False, allow_none=True)
     batch_spec_passthrough = fields.Dict(required=False, allow_none=True)
 
+    """
+    Necessary addition for AWS Glue Data Catalog assets.
+    By using AWS Glue Data Catalog, we need to have both database and table names.
+    The partitions are optional, it must match the partitions defined in the table
+    and it is used to create batch identifiers that allows the validation of a single
+    partition. Example: if we have two partitions (year, month), specifying these would
+    create one batch id per combination of year and month. The connector gets the partition
+    values from the AWS Glue Data Catalog.
+    """
+    database_name = fields.String(required=False, allow_none=True)
+    partitions = fields.List(
+        cls_or_instance=fields.Str(), required=False, allow_none=True
+    )
+
     # Necessary addition for Cloud assets
     table_name = fields.String(required=False, allow_none=True)
     type = fields.String(required=False, allow_none=True)
@@ -406,7 +439,7 @@ class AssetConfigSchema(Schema):
     reader_options = fields.Dict(keys=fields.Str(), required=False, allow_none=True)
 
     @validates_schema
-    def validate_schema(self, data, **kwargs) -> None:  # type: ignore[no-untyped-def]
+    def validate_schema(self, data, **kwargs) -> None:
         pass
 
     @pre_dump
@@ -432,7 +465,7 @@ class AssetConfigSchema(Schema):
 
     # noinspection PyUnusedLocal
     @post_load
-    def make_asset_config(self, data, **kwargs):  # type: ignore[no-untyped-def]
+    def make_asset_config(self, data, **kwargs):
         return AssetConfig(**data)
 
 
@@ -668,9 +701,16 @@ class DataConnectorConfigSchema(AbstractConfigSchema):
     introspection_directives = fields.Dict(required=False, allow_none=True)
     batch_spec_passthrough = fields.Dict(required=False, allow_none=True)
 
+    # AWS Glue Data Catalog
+    glue_introspection_directives = fields.Dict(required=False, allow_none=True)
+    catalog_id = fields.String(required=False, allow_none=True)
+    partitions = fields.List(
+        cls_or_instance=fields.Str(), required=False, allow_none=True
+    )
+
     # noinspection PyUnusedLocal
-    @validates_schema
-    def validate_schema(self, data, **kwargs):
+    @validates_schema  # noqa: C901
+    def validate_schema(self, data, **kwargs):  # noqa: C901 - complexity 16
         # If a class_name begins with the dollar sign ("$"), then it is assumed to be a variable name to be substituted.
         if data["class_name"][0] == "$":
             return
@@ -808,15 +848,11 @@ data connector. You must only select one between `filename` (from_service_accoun
 """
                 )
         if (
-            "data_asset_name_prefix" in data
-            or "data_asset_name_suffix" in data
-            or "include_schema_name" in data
+            "include_schema_name" in data
             or "splitter_method" in data
             or "splitter_kwargs" in data
             or "sampling_method" in data
             or "sampling_kwargs" in data
-            or "excluded_tables" in data
-            or "included_tables" in data
             or "skip_inapplicable_tables" in data
         ) and not (
             data["class_name"]
@@ -828,6 +864,44 @@ data connector. You must only select one between `filename` (from_service_accoun
             raise ge_exceptions.InvalidConfigError(
                 f"""Your current configuration uses one or more keys in a data connector that are required only by an
 SQL type of the data connector (your data connector is "{data['class_name']}").  Please update your configuration to
+continue.
+                """
+            )
+        if (
+            "data_asset_name_prefix" in data
+            or "data_asset_name_suffix" in data
+            or "excluded_tables" in data
+            or "included_tables" in data
+        ) and not (
+            data["class_name"]
+            in [
+                "InferredAssetSqlDataConnector",
+                "ConfiguredAssetSqlDataConnector",
+                "InferredAssetAWSGlueDataCatalogDataConnector",
+                "ConfiguredAssetAWSGlueDataCatalogDataConnector",
+            ]
+        ):
+            raise ge_exceptions.InvalidConfigError(
+                f"""Your current configuration uses one or more keys in a data connector that are required only by an
+SQL/GlueCatalog type of the data connector (your data connector is "{data['class_name']}").  Please update your configuration to
+continue.
+                """
+            )
+
+        if (
+            "partitions" in data
+            or "catalog_id" in data
+            or "glue_introspection_directives" in data
+        ) and not (
+            data["class_name"]
+            in [
+                "InferredAssetAWSGlueDataCatalogDataConnector",
+                "ConfiguredAssetAWSGlueDataCatalogDataConnector",
+            ]
+        ):
+            raise ge_exceptions.InvalidConfigError(
+                f"""Your current configuration uses one or more keys in a data connector that are required only by an
+GlueCatalog type of the data connector (your data connector is "{data['class_name']}").  Please update your configuration to
 continue.
                 """
             )
@@ -942,6 +1016,8 @@ class ExecutionEngineConfigSchema(Schema):
     # BigQuery Service Account Credentials
     # https://googleapis.dev/python/sqlalchemy-bigquery/latest/README.html#connection-string-parameters
     credentials_info = fields.Dict(required=False, allow_none=True)
+
+    create_temp_table = fields.Boolean(required=False, allow_none=True)
 
     # noinspection PyUnusedLocal
     @validates_schema
@@ -1150,7 +1226,7 @@ class DatasourceConfigSchema(AbstractConfigSchema):
         if "generators" in data:
             raise ge_exceptions.InvalidConfigError(
                 'Your current configuration uses the "generators" key in a datasource, but in version 0.10 of '
-                'GE that key is renamed to "batch_kwargs_generators". Please update your configuration to continue.'
+                'GX that key is renamed to "batch_kwargs_generators". Please update your configuration to continue.'
             )
         # If a class_name begins with the dollar sign ("$"), then it is assumed to be a variable name to be substituted.
         if data["class_name"][0] == "$":
@@ -1484,7 +1560,7 @@ class ConcurrencyConfigSchema(Schema):
     enabled = fields.Boolean(default=False)
 
 
-class GeCloudConfig(DictDot):
+class GXCloudConfig(DictDot):
     def __init__(
         self,
         base_url: str,
@@ -1616,15 +1692,15 @@ class DataContextConfigSchema(Schema):
                 ),
             )
 
-        if data["config_version"] > CURRENT_GE_CONFIG_VERSION:
+        if data["config_version"] > CURRENT_GX_CONFIG_VERSION:
             raise ge_exceptions.InvalidDataContextConfigError(
                 "You appear to have an invalid config version ({}).\n    The maximum valid version is {}.".format(
-                    data["config_version"], CURRENT_GE_CONFIG_VERSION
+                    data["config_version"], CURRENT_GX_CONFIG_VERSION
                 ),
                 validation_error=ValidationError(message="config version too high"),
             )
 
-        if data["config_version"] < CURRENT_GE_CONFIG_VERSION and (
+        if data["config_version"] < CURRENT_GX_CONFIG_VERSION and (
             "checkpoint_store_name" in data
             or any(
                 [
@@ -1635,17 +1711,17 @@ class DataContextConfigSchema(Schema):
         ):
             raise ge_exceptions.InvalidDataContextConfigError(
                 "You appear to be using a Checkpoint store with an invalid config version ({}).\n    Your data context with this older configuration version specifies a Checkpoint store, which is a new feature.  Please update your configuration to the new version number {} before adding a Checkpoint store.\n  Visit https://docs.greatexpectations.io/docs/guides/miscellaneous/migration_guide#migrating-to-the-batch-request-v3-api to learn more about the upgrade process.".format(
-                    data["config_version"], float(CURRENT_GE_CONFIG_VERSION)
+                    data["config_version"], float(CURRENT_GX_CONFIG_VERSION)
                 ),
                 validation_error=ValidationError(
                     message="You appear to be using a Checkpoint store with an invalid config version ({}).\n    Your data context with this older configuration version specifies a Checkpoint store, which is a new feature.  Please update your configuration to the new version number {} before adding a Checkpoint store.\n  Visit https://docs.greatexpectations.io/docs/guides/miscellaneous/migration_guide#migrating-to-the-batch-request-v3-api to learn more about the upgrade process.".format(
-                        data["config_version"], float(CURRENT_GE_CONFIG_VERSION)
+                        data["config_version"], float(CURRENT_GX_CONFIG_VERSION)
                     )
                 ),
             )
 
         if (
-            data["config_version"] >= FIRST_GE_CONFIG_VERSION_WITH_CHECKPOINT_STORE
+            data["config_version"] >= FIRST_GX_CONFIG_VERSION_WITH_CHECKPOINT_STORE
             and "validation_operators" in data
             and data["validation_operators"] is not None
         ):
@@ -1654,14 +1730,14 @@ class DataContextConfigSchema(Schema):
 ({data["config_version"]}).\n    Your data context with this configuration version uses validation_operators, which \
 are being deprecated.  Please consult the V3 API migration guide \
 https://docs.greatexpectations.io/docs/guides/miscellaneous/migration_guide#migrating-to-the-batch-request-v3-api and \
-update your configuration to be compatible with the version number {CURRENT_GE_CONFIG_VERSION}.\n    (This message \
+update your configuration to be compatible with the version number {CURRENT_GX_CONFIG_VERSION}.\n    (This message \
 will appear repeatedly until your configuration is updated.)
 """
             )
 
 
 class DataContextConfigDefaults(enum.Enum):
-    DEFAULT_CONFIG_VERSION = CURRENT_GE_CONFIG_VERSION
+    DEFAULT_CONFIG_VERSION = CURRENT_GX_CONFIG_VERSION
     DEFAULT_EXPECTATIONS_STORE_NAME = "expectations_store"
     EXPECTATIONS_BASE_DIRECTORY = "expectations"
     DEFAULT_EXPECTATIONS_STORE_BASE_DIRECTORY_RELATIVE_NAME = (
@@ -1781,9 +1857,9 @@ class BaseStoreBackendDefaults(DictDot):
         checkpoint_store_name: str = DataContextConfigDefaults.DEFAULT_CHECKPOINT_STORE_NAME.value,
         profiler_store_name: str = DataContextConfigDefaults.DEFAULT_PROFILER_STORE_NAME.value,
         data_docs_site_name: str = DataContextConfigDefaults.DEFAULT_DATA_DOCS_SITE_NAME.value,
-        validation_operators: dict = None,
-        stores: dict = None,
-        data_docs_sites: dict = None,
+        validation_operators: Optional[dict] = None,
+        stores: Optional[dict] = None,
+        data_docs_sites: Optional[dict] = None,
     ) -> None:
         self.expectations_store_name = expectations_store_name
         self.validations_store_name = validations_store_name
@@ -2321,11 +2397,11 @@ class DataContextConfig(BaseYamlConfig):
 
     # TODO: <Alex>ALEX (we still need the next two properties)</Alex>
     @classmethod
-    def get_config_class(cls):  # type: ignore[no-untyped-def]
+    def get_config_class(cls):
         return cls  # DataContextConfig
 
     @classmethod
-    def get_schema_class(cls):  # type: ignore[no-untyped-def]
+    def get_schema_class(cls):
         return DataContextConfigSchema
 
     @property
@@ -2404,7 +2480,7 @@ class CheckpointValidationConfigSchema(AbstractConfigSchema):
 
     id = fields.String(required=False, allow_none=False)
 
-    def dump(self, obj: dict, *, many: Optional[bool] = None) -> dict:  # type: ignore[override]
+    def dump(self, obj: dict, *, many: Optional[bool] = None) -> dict:
         """
         Chetan - 20220803 - By design, Marshmallow accepts unknown fields through the
         `unknown = INCLUDE` directive but only upon load. When dumping, it validates
@@ -2639,11 +2715,11 @@ class CheckpointConfig(BaseYamlConfig):
 
     # TODO: <Alex>ALEX (we still need the next two properties)</Alex>
     @classmethod
-    def get_config_class(cls):  # type: ignore[no-untyped-def]
+    def get_config_class(cls):
         return cls  # CheckpointConfig
 
     @classmethod
-    def get_schema_class(cls):  # type: ignore[no-untyped-def]
+    def get_schema_class(cls):
         return CheckpointConfigSchema
 
     @property
@@ -2956,9 +3032,8 @@ class CheckpointConfig(BaseYamlConfig):
             )
 
         if run_name is None and run_name_template is not None:
-            run_name = get_datetime_string_from_strftime_format(
-                format_str=run_name_template, datetime_obj=run_time  # type: ignore[arg-type]
-            )
+            if isinstance(run_time, datetime.datetime):
+                run_name = run_time.strftime(run_name_template)
 
         run_id = run_id or RunIdentifier(run_name=run_name, run_time=run_time)
 
