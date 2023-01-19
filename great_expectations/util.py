@@ -1843,6 +1843,16 @@ def get_context(
 
     - runtime_environment: Optionally override specific configuration values.
 
+
+    +------------------------+------------+----------+----------+
+    | Header row, column 1   | Header 2   | Header 3 | Header 4 |
+    | (header rows optional) |            |          |          |
+    +========================+============+==========+==========+
+    | body row 1, column 1   | column 2   | column 3 | column 4 |
+    +------------------------+------------+----------+----------+
+    | body row 2             | ...        | ...      |          |
+    +------------------------+------------+----------+----------+
+
     Args:
         project_config: In-memory configuration for Data Context.
         context_root_dir (str or pathlib.Path): Path to directory that contains great_expectations.yml file
