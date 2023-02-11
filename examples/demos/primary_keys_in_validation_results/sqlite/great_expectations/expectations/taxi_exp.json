@@ -1,0 +1,40 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "taxi_exp",
+  "expectations": [
+    {
+      "expectation_type": "expect_column_mean_to_be_between",
+      "ge_cloud_id": null,
+      "kwargs": {
+        "column": "fare_amount",
+        "min_value": 0,
+        "max_value": 1
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "ge_cloud_id": null,
+      "kwargs": {
+        "column": "PULocationID",
+        "value_set": [
+          237,
+          263,
+          132,
+          50,
+          68,
+          158,
+          234,
+          151,
+          170,
+          100
+        ]
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "great_expectations_version": "0.15.43+20.g970f654601"
+  }
+}
