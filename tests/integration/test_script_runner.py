@@ -1152,6 +1152,8 @@ cloud_gcp_tests = [
         data_context_dir="tests/integration/fixtures/no_datasources/great_expectations",
         extra_backend_dependencies=BackendDependencies.GCS,
     ),
+    # TODO: THis test is failing:
+    # pytest -v --docs-tests -m integration -k "test_docs[how_to_host_and_share_data_docs_on_gcs]" tests/integration/test_script_runner.py
     IntegrationTestFixture(
         name="how_to_host_and_share_data_docs_on_gcs",
         user_flow_script="tests/integration/docusaurus/setup/configuring_data_docs/how_to_host_and_share_data_docs_on_gcs.py",
