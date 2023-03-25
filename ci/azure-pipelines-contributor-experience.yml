@@ -1,52 +1,15 @@
-# This file is responsible for configuring the `dev` pipeline (https://dev.azure.com/great-expectations/great_expectations/_build)
+# This file is responsible for configuring the `contributor_experience` pipeline (https://dev.azure.com/great-expectations/great_expectations/_build)
 #
 # The pipeline is run under the following conditions:
 #   - On the working branch whenever a commit is made to an open PR
-#
-# `dev` runs unit tests for any directories that have sufficient coverage and integration tests for those that don't.
-# The pipeline aims to balance both performance and safety to improve the developer experience but is innately less thorough than `great_expectations`.
 
 trigger:
   branches:
     include:
-    - pre_pr-* # Can be used to test both `great_expectations` and `dependency_graph` pipelines
     - develop
-    exclude:
-    - main
-
-resources:
-  containers:
-  - container: postgres
-    image: postgres:11
-    ports:
-    - 5432:5432
-    env:
-      POSTGRES_DB: "test_ci"
-      POSTGRES_HOST_AUTH_METHOD: "trust"
-  - container: mysql
-    image: mysql:8.0.20
-    ports:
-      - 3306:3306
-    env:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: test_ci
-  - container: mssql
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    env:
-      ACCEPT_EULA: Y
-      MSSQL_SA_PASSWORD: ReallyStrongPwd1234%^&*
-      MSSQL_DB: test_ci
-      MSSQL_PID: Developer
-    ports:
-      - 1433:1433
-  - container: trino
-    image: trinodb/trino:400
-    ports:
-      - 8088:8080
 
 variables:
   GE_USAGE_STATISTICS_URL: "https://qa.stats.greatexpectations.io/great_expectations/v1/usage_statistics"
-
 
 stages:
   - stage: scope_check
@@ -60,18 +23,6 @@ stages:
             inputs:
               verbose: true
               rules: |
-                [DocsChanged]
-                docs/**
-                tests/integration/docusaurus/**
-                tests/integration/fixtures/**
-                tests/test_sets/**
-                examples/expectations/*.py
-                static/_redirects
-                static/index.html
-                /*.js
-                /*.json
-                yarn.lock
-
                 [GXChanged]
                 great_expectations/**/*.py
                 pyproject.toml
@@ -141,32 +92,6 @@ stages:
           ruff --select F401 great_expectations tests
         name: UnusedImportChecker
 
-    - job: check_repo_root_size
-      steps:
-        - script: ./ci/checks/check_repo_root_size.sh
-          name: CheckRepoRootSize
-
-    - job: docs_snippet_checker
-      condition: eq(stageDependencies.scope_check.changes.outputs['CheckChanges.DocsChanged'], true)
-      steps:
-      - script: |
-          yarn install
-          python ci/checks/validate_docs_snippets.py
-        name: DocsSnippetChecker
-
-    - job: line_number_snippet_checker
-      condition: eq(stageDependencies.scope_check.changes.outputs['CheckChanges.DocsChanged'], true)
-      steps:
-        - script: |
-            python ci/checks/check_no_line_number_snippets.py
-          name: LineNumberSnippetChecker
-
-    - job: public_api_report
-      steps:
-        - script: |
-            python docs/sphinx_api_docs_source/public_api_report.py
-          name: PublicAPIReport
-
   - stage: import_ge
     dependsOn: scope_check
     pool:
@@ -192,7 +117,7 @@ stages:
              python -c "import great_expectations as gx; print('Successfully imported GX Version:', gx.__version__)"
            displayName: 'Import Great Expectations'
 
-  - stage: required
+  - stage: pytest_no_flags
     dependsOn: [scope_check, lint, import_ge, custom_checks]
     pool:
       vmImage: 'ubuntu-20.04'
@@ -544,35 +469,3 @@ stages:
             env:
               GE_USAGE_STATISTICS_URL: ${{ variables.GE_USAGE_STATISTICS_URL }}
               SQLALCHEMY_WARN_20: true
-
-  - stage: airflow_provider
-    dependsOn: [scope_check, lint, import_ge, custom_checks]
-    pool:
-      vmImage: 'ubuntu-latest'
-
-    jobs:
-      - job: run_airflow_provider_tests
-        steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.7'
-            displayName: 'Use Python 3.7'
-
-          - script: ./ci/checks/run_gx_airflow_operator_tests.sh
-            name: RunAirflowProviderTests
-
-  - stage: test_build_docs
-    dependsOn: [scope_check, lint, import_ge, custom_checks]
-    pool:
-      vmImage: 'ubuntu-latest'
-
-    jobs:
-      - job: test_build_docs
-        steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.8'
-            displayName: 'Use Python 3.8'
-
-          - script: cd docs/docusaurus && yarn install && bash ../build_docs
-            name: TestBuildDocs
