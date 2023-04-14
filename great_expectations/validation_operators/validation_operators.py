@@ -9,6 +9,7 @@ from great_expectations.core.batch import Batch  # noqa: TCH001
 from great_expectations.core.run_identifier import RunIdentifier
 from great_expectations.data_asset import DataAsset  # noqa: TCH001
 from great_expectations.data_asset.util import parse_result_format
+from great_expectations.data_context import CloudDataContext
 from great_expectations.data_context.cloud_constants import GXCloudRESTResource
 from great_expectations.data_context.types.resource_identifiers import (
     ExpectationSuiteIdentifier,
@@ -207,6 +208,11 @@ class ActionListValidationOperator(ValidationOperator):
 
         self.action_list = action_list
         self.actions = OrderedDict()
+        # For a great expectations cloud context it's important that we store the validation result before we send
+        # notifications. That's because we want to provide a link to the validation result and the validation result
+        # page won't get created until we run the store action.
+        store_action_detected = False
+        notify_before_store: Optional[str] = None
         for action_config in action_list:
             assert isinstance(action_config, dict)
             # NOTE: Eugene: 2019-09-23: need a better way to validate an action config:
@@ -216,6 +222,19 @@ class ActionListValidationOperator(ValidationOperator):
                         action_config.keys()
                     )
                 )
+
+            if "class_name" in action_config["action"]:
+                if (
+                    action_config["action"]["class_name"]
+                    == "StoreValidationResultAction"
+                ):
+                    store_action_detected = True
+                elif (
+                    action_config["action"]["class_name"].endswith("NotificationAction")
+                    and not store_action_detected
+                ):
+                    # We actually only support SlackNotifications currently but setting this for any notification.
+                    notify_before_store = action_config["action"]["class_name"]
 
             config = action_config["action"]
             module_name = "great_expectations.validation_operators"
@@ -231,6 +250,13 @@ class ActionListValidationOperator(ValidationOperator):
                     class_name=config["class_name"],
                 )
             self.actions[action_config["name"]] = new_action
+        if notify_before_store and isinstance(self.data_context, CloudDataContext):
+            logger.warning(
+                f"The checkpoints action_list configuration has a notification, {notify_before_store}"
+                "configured without a StoreValidationResultAction configured. This means the notification can't"
+                "provide a link the the validation result. Please move all notification actions after "
+                "StoreValidationResultAction."
+            )
 
     @property
     def _using_cloud_context(self) -> bool:
