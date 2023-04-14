@@ -54,7 +54,6 @@ from great_expectations.optional_imports import (
     sqlalchemy_engine_Row,
     sqlalchemy_OperationalError,
     sqlalchemy_TextClause,
-    sqlalchemy_version_check,
 )
 from great_expectations.optional_imports import (
     sqlalchemy as sa,
@@ -104,7 +103,6 @@ logger = logging.getLogger(__name__)
 
 
 if sa:
-    sqlalchemy_version_check(sa.__version__)
     make_url = import_make_url()
 
 
