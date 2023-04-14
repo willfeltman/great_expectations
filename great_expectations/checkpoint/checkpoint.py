@@ -43,7 +43,6 @@ from great_expectations.core.usage_statistics.usage_statistics import (
 )
 from great_expectations.data_asset import DataAsset
 from great_expectations.data_context.cloud_constants import (
-    CLOUD_APP_DEFAULT_BASE_URL,
     GXCloudRESTResource,
 )
 from great_expectations.data_context.types.base import (
@@ -315,23 +314,29 @@ class BaseCheckpoint(ConfigPeer):
                 run_result: dict
                 validation_result: Optional[ExpectationSuiteValidationResult]
                 meta: ExpectationSuiteValidationResultMeta
+                validation_result_url: str | None = None
                 for run_result in run_results.values():
                     validation_result = run_result.get("validation_result")
                     if validation_result:
                         meta = validation_result.meta
                         id = self.ge_cloud_id
                         meta["checkpoint_id"] = id
+                    # TODO: we only currently support 1 validation_result_url per checkpoint
+                    if not validation_result_url:
+                        if (
+                            "action_results" in run_results
+                            and "store_validation_result"
+                            in run_results["action_results"]["store_validation_result"]
+                            and "validation_result_url"
+                            in run_results["action_results"]["store_validation_result"][
+                                "validation_result_url"
+                            ]
+                        ):
+                            validation_result_url = run_results["action_results"][
+                                "store_validation_result"
+                            ]["validation_result_url"]
 
                 checkpoint_run_results.update(run_results)
-
-        # Generate a URL to the validation result details page in GX Cloud
-        validation_result_url: str | None = None
-        for key in checkpoint_run_results:
-            if isinstance(key, GXCloudIdentifier) and key.id:
-                validation_result_url = (
-                    f"{CLOUD_APP_DEFAULT_BASE_URL}?validationResultId={key.id}"
-                )
-                break
 
         return CheckpointResult(
             validation_result_url=validation_result_url,

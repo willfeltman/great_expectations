@@ -324,6 +324,7 @@ class GXCloudStoreBackend(StoreBackend, metaclass=ABCMeta):
             raise ValueError(f'Invalid kwargs: {(", ").join(extra_kwargs)}')
         return None
 
+    # BDIRKS fix type. Not bool ever and return type should be some dict
     def _set(  # type: ignore[override]
         self,
         key: Tuple[GXCloudRESTResource, ...],
@@ -367,13 +368,14 @@ class GXCloudStoreBackend(StoreBackend, metaclass=ABCMeta):
             response.raise_for_status()
             response_json = response.json()
 
-            object_id = response_json["data"]["id"]
-            object_url = self.get_url_for_key((self.ge_cloud_resource_type, object_id))
-            return GXCloudResourceRef(
-                resource_type=resource_type,
-                id=object_id,
-                url=object_url,
-            )
+            # BDIRKS maybe should return an object here
+            return {
+                "id": response_json["data"]["id"],
+                "validation_result_url": response_json["data"]["attributes"][
+                    "validation_result"
+                ]["display_url"],
+            }
+
         except requests.HTTPError as http_exc:
             raise StoreBackendError(
                 f"Unable to set object in GX Cloud Store Backend: {get_user_friendly_error_message(http_exc)}"
