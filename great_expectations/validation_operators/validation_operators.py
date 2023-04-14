@@ -9,7 +9,6 @@ from great_expectations.core.batch import Batch  # noqa: TCH001
 from great_expectations.core.run_identifier import RunIdentifier
 from great_expectations.data_asset import DataAsset  # noqa: TCH001
 from great_expectations.data_asset.util import parse_result_format
-from great_expectations.data_context import CloudDataContext
 from great_expectations.data_context.cloud_constants import GXCloudRESTResource
 from great_expectations.data_context.types.resource_identifiers import (
     ExpectationSuiteIdentifier,
@@ -250,7 +249,7 @@ class ActionListValidationOperator(ValidationOperator):
                     class_name=config["class_name"],
                 )
             self.actions[action_config["name"]] = new_action
-        if notify_before_store and isinstance(self.data_context, CloudDataContext):
+        if notify_before_store and self._using_cloud_context:
             logger.warning(
                 f"The checkpoints action_list configuration has a notification, {notify_before_store}"
                 "configured without a StoreValidationResultAction configured. This means the notification can't"
