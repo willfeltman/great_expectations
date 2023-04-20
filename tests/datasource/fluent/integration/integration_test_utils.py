@@ -317,6 +317,7 @@ def run_batch_head(
             assert len(head_data.data.index) == total_row_count
         else:
             # default to 5 rows
+            # TODO: Error is here in batch.head()
             head_data = batch.head(fetch_all=fetch_all)
             assert isinstance(head_data, HeadData)
             assert len(head_data.data.index) == 5

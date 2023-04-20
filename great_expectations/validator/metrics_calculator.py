@@ -68,6 +68,7 @@ class MetricsCalculator:
         """
         Convenience method to run "table.head" metric.
         """
+        # TODO: Looks like the error might be raised in this method
         if domain_kwargs is None:
             domain_kwargs = {}
 
